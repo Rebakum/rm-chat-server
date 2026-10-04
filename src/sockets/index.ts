@@ -1,8 +1,8 @@
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
-import { fromNodeHeaders } from "better-auth/node";
 import prisma from "../lib/prisma";
-import auth from "../lib/auth";
+import env from "../config/env";
+import { getAuthenticatedSession } from "../middlewares/auth";
 import { handlePresence } from "./presence";
 import { handleChat } from "./chat";
 import { handleCall } from "./call";
@@ -47,14 +47,14 @@ export const disconnectUserSockets = (userId: string): void => {
 };
 
 export const initSocket = (httpServer: HttpServer): Server => {
+  const isDevelopment = env.NODE_ENV === "development";
   const allowedOrigins = Array.from(
     new Set([
-      ...((process.env.CLIENT_URL || "http://localhost:3000").split(",").map((u) => u.trim())),
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "http://localhost:3001",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:5173",
+      ...(process.env.CLIENT_URL || "")
+        .split(",")
+        .map((origin) => origin.trim().replace(/\/+$/, ""))
+        .filter(Boolean),
+      ...(isDevelopment ? ["http://localhost:3000"] : []),
     ])
   ).filter(Boolean);
 
@@ -63,12 +63,6 @@ export const initSocket = (httpServer: HttpServer): Server => {
       origin: (requestOrigin, callback) => {
         if (!requestOrigin) return callback(null, true);
         if (allowedOrigins.includes(requestOrigin)) return callback(null, true);
-        if (
-          process.env.NODE_ENV === "development" &&
-          /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin)
-        ) {
-          return callback(null, true);
-        }
         return callback(new Error("Not allowed by CORS"), false);
       },
       methods: ["GET", "POST"],
@@ -80,21 +74,12 @@ export const initSocket = (httpServer: HttpServer): Server => {
 
   io.use(async (socket, next) => {
     try {
-      const session = await auth.api.getSession({
-        headers: fromNodeHeaders(socket.handshake.headers),
-      });
-      if (!session) {
+      const authenticated = await getAuthenticatedSession(socket.handshake.headers);
+      if (!authenticated) {
         return next(new Error("Authentication required"));
       }
-      const account = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { role: true, status: true },
-      });
-      if (!account || account.status === "rejected" || account.status === "banned") {
-        return next(new Error("This account is not allowed to connect."));
-      }
-      (socket as any).userId = session.user.id;
-      (socket as any).userRole = account.role;
+      (socket as any).userId = authenticated.session.user.id;
+      (socket as any).userRole = authenticated.account.role;
       next();
     } catch {
       next(new Error("Authentication failed"));

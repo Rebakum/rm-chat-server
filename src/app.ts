@@ -14,16 +14,17 @@ import router from "./routes/router";
 import { loginController } from "./modules/auth/auth.controller";
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(helmet());
+const isDevelopment = env.NODE_ENV === "development";
 const allowedOrigins = Array.from(
   new Set([
-    ...env.CLIENT_URL.split(",").map((u) => u.trim()),
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
+    ...(process.env.CLIENT_URL || "")
+      .split(",")
+      .map((origin) => origin.trim().replace(/\/+$/, ""))
+      .filter(Boolean),
+    ...(isDevelopment ? ["http://localhost:3000"] : []),
   ])
 ).filter(Boolean);
 
@@ -32,12 +33,6 @@ app.use(
     origin: (requestOrigin, callback) => {
       if (!requestOrigin) return callback(null, true);
       if (allowedOrigins.includes(requestOrigin)) return callback(null, true);
-      if (
-        env.NODE_ENV === "development" &&
-        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin)
-      ) {
-        return callback(null, true);
-      }
       return callback(null, false);
     },
     credentials: true,
@@ -86,8 +81,6 @@ app.use(notFound);
 app.use(errorHandler);
 
 export default app;
-
-
 
 
 

@@ -78,8 +78,14 @@ export const revokeOtherSessions = asyncHandler(async (req: Request, res: Respon
 // Ends every session for this user (including the current one).
 export const logoutAllDevices = asyncHandler(async (req: Request, res: Response) => {
   const count = await authService.logoutAllDevices(req.user!.id);
-  res.clearCookie("better-auth.session_token", { path: "/" });
-  res.clearCookie("__Secure-better-auth.session_token", { path: "/" });
+  const cookieOptions = {
+    path: "/",
+    sameSite: env.NODE_ENV === "production" ? "none" as const : "lax" as const,
+    secure: env.NODE_ENV === "production",
+    httpOnly: true,
+  };
+  res.clearCookie("better-auth.session_token", cookieOptions);
+  res.clearCookie("__Secure-better-auth.session_token", cookieOptions);
   ApiResponse.success(res, { revoked: count }, "Logged out on all devices");
 });
 

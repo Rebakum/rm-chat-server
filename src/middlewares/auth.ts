@@ -1,7 +1,22 @@
 import { Request, Response, NextFunction } from "express";
+import { IncomingHttpHeaders } from "http";
 import { fromNodeHeaders } from "better-auth/node";
 import auth from "../lib/auth";
 import prisma from "../lib/prisma";
+
+export const getAuthenticatedSession = async (headers: IncomingHttpHeaders) => {
+  const session = await auth.api.getSession({ headers: fromNodeHeaders(headers) });
+  if (!session) return null;
+
+  const account = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, status: true },
+  });
+  if (!account || account.status === "rejected" || account.status === "banned") {
+    throw new Error("This account has been rejected or disabled.");
+  }
+  return { session, account };
+};
 
 // Many routes chain `requireAuth, requireTeacher` (or requireStudent /
 // requireAdmin) back to back. Each of those middlewares used to call
@@ -11,20 +26,19 @@ import prisma from "../lib/prisma";
 // up the session once and reuses it if an earlier middleware in the chain
 // (typically requireAuth) already populated req.user/req.session.
 const getSessionOnce = async (req: Request) => {
-  const session =
-    req.user && req.session
-      ? { user: req.user, session: req.session }
-      : await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
-  if (!session) return null;
-
-  const account = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { status: true },
-  });
-  if (!account || account.status === "rejected" || account.status === "banned") {
-    throw new Error("This account has been rejected or disabled.");
+  if (req.user && req.session) {
+    const account = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { status: true },
+    });
+    if (!account || account.status === "rejected" || account.status === "banned") {
+      throw new Error("This account has been rejected or disabled.");
+    }
+    return { user: req.user, session: req.session };
   }
-  return session;
+
+  const authenticated = await getAuthenticatedSession(req.headers);
+  return authenticated?.session ?? null;
 };
 
 /**

@@ -1,14 +1,20 @@
+import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
-import { prismaAdapter } from "@better-auth/prisma-adapter";
-import prisma from "./prisma";
-import { sendOTPEmail, sendResetPasswordEmail } from "./mailer";
 import env from "../config/env";
+import { sendOTPEmail, sendResetPasswordEmail } from "./mailer";
+import prisma from "./prisma";
 
 const isDev = env.NODE_ENV === "development";
+const isProduction = env.NODE_ENV === "production";
+const clientOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
 
 const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  baseURL: process.env.BETTER_AUTH_URL,
 
   emailAndPassword: {
     enabled: true,
@@ -54,23 +60,25 @@ const auth = betterAuth({
   },
 
   advanced: {
+    useSecureCookies: isProduction,
     defaultCookieAttributes: {
-      sameSite: "lax",
-      secure: !isDev,
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
       httpOnly: true,
       path: "/",
     },
   },
+  //  advanced: {
+  //   useSecureCookies: true,
+  //   defaultCookieAttributes: {
+  //     sameSite: "none",
+  //     secure: true,
+  //     httpOnly: true,
+  //   },
+  // },
 
   trustedOrigins: Array.from(
-    new Set([
-      ...env.CLIENT_URL.split(",").map((u) => u.trim()),
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "http://localhost:3001",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:5173",
-    ])
+    new Set([...clientOrigins, ...(isDev ? ["http://localhost:3000"] : [])]),
   ).filter(Boolean),
 });
 
