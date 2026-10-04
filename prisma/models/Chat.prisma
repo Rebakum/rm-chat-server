@@ -44,3 +44,14 @@ model MessageReaction {
   @@unique([messageId, userId, emoji])
   @@index([messageId])
 }
+
+model MessageEditHistory {
+  id           String   @id @default(uuid())
+  messageId    String
+  previousText String
+  editedById   String?
+  editedAt     DateTime @default(now())
+  editor       User?    @relation(fields: [editedById], references: [id], onDelete: SetNull)
+
+  @@index([messageId, editedAt])
+}

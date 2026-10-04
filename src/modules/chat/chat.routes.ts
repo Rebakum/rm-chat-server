@@ -19,6 +19,7 @@ router.get("/chats/directory", requireAuth, ctrl.getDirectory);
 router.post("/chats/direct/:userId", requireAuth, ctrl.openDirect);
 router.get("/chats/monitor/rooms", requireAdmin, ctrl.getMonitorRooms);
 router.delete("/chats/messages/:messageId", requireAdmin, ctrl.deleteMessageAdmin);
+router.get("/chats/messages/:messageId/edit-history", requireAdmin, ctrl.getMessageEditHistory);
 
 router.get("/chats/:chatId/messages", requireAuth, ctrl.getChatMessages);
 router.get(

@@ -144,27 +144,57 @@ const updateText = async (
   senderId: string,
   data: UpdateMessageDTO,
 ): Promise<MessageWithSender> => {
+  return prisma.$transaction(async (tx) => {
+    const [message] = await tx.$queryRaw<
+      Array<{ id: string; senderId: string; type: string; text: string }>
+    >`SELECT id, "senderId", type, text FROM "Message" WHERE id = ${messageId} FOR UPDATE`;
+    if (!message) throw ApiError.notFound("Message not found");
+    if (message.senderId !== senderId) {
+      throw ApiError.forbidden("You can only edit your own messages");
+    }
+    if (message.type.toLowerCase() !== "text") {
+      throw ApiError.badRequest("Only text messages can be edited");
+    }
+
+    if (message.text !== data.text) {
+      await tx.messageEditHistory.create({
+        data: {
+          messageId,
+          previousText: message.text,
+          editedById: senderId,
+        },
+      });
+    }
+
+    return tx.message.update({
+      where: { id: messageId },
+      data: { text: data.text, isEdited: true },
+      include: {
+        sender: { select: { id: true, name: true, displayName: true, photoURL: true, image: true, role: true } },
+        replyTo: true,
+        reactions: { select: { userId: true, emoji: true } },
+      },
+    }) as Promise<MessageWithSender>;
+  });
+};
+
+const getEditHistory = async (messageId: string) => {
   const message = await prisma.message.findUnique({
     where: { id: messageId },
-    select: { id: true, senderId: true, type: true },
+    select: { id: true },
   });
   if (!message) throw ApiError.notFound("Message not found");
-  if (message.senderId !== senderId) {
-    throw ApiError.forbidden("You can only edit your own messages");
-  }
-  if (message.type.toLowerCase() !== "text") {
-    throw ApiError.badRequest("Only text messages can be edited");
-  }
 
-  return prisma.message.update({
-    where: { id: messageId },
-    data: { text: data.text, isEdited: true },
-    include: {
-      sender: { select: { id: true, name: true, displayName: true, photoURL: true, image: true, role: true } },
-      replyTo: true,
-      reactions: { select: { userId: true, emoji: true } },
+  return prisma.messageEditHistory.findMany({
+    where: { messageId },
+    orderBy: { editedAt: "asc" },
+    select: {
+      id: true,
+      previousText: true,
+      editedById: true,
+      editedAt: true,
     },
-  }) as Promise<MessageWithSender>;
+  });
 };
 
 const toggleReaction = async (
@@ -214,4 +244,4 @@ const removeMessage = async (
   return { messageId: message.id, chatId: message.chatId };
 };
 
-export { create, getByChat, markRead, updateText, toggleReaction, removeMessage };
+export { create, getByChat, markRead, updateText, getEditHistory, toggleReaction, removeMessage };

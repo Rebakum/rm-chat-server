@@ -90,6 +90,7 @@ model User {
   moderatorPermissions ModeratorPermission[]
   auditActions         ModeratorAuditLog[]   @relation("AuditActor")
   auditTargets         ModeratorAuditLog[]   @relation("AuditTarget")
+  messageEdits         MessageEditHistory[]
   notifications        Notification[]
   teacherApplications  TeacherApplication[]
   savedTeachersAsStudent SavedTeacher[] @relation("SavedTeacherStudent")

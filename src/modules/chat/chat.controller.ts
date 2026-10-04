@@ -114,6 +114,11 @@ const deleteMessageAdmin = asyncHandler(async (req: Request, res: Response) => {
   ApiResponse.success(res, result, "Message deleted");
 });
 
+const getMessageEditHistory = asyncHandler(async (req: Request, res: Response) => {
+  const history = await messageService.getEditHistory(req.params.messageId as string);
+  ApiResponse.success(res, history);
+});
+
 const deleteChatAdmin = asyncHandler(async (req: Request, res: Response) => {
   const chatId = req.params.chatId as string;
   const chat = await chatService.getAdminChatById(chatId);
@@ -169,6 +174,7 @@ export {
   getMessageFile,
   getMonitorRooms,
   deleteMessageAdmin,
+  getMessageEditHistory,
   deleteChatAdmin,
   getAdminChats,
   getAdminChatById,
