@@ -1,0 +1,28 @@
+// Scheduled / instant 1:1 student ↔ teacher video session
+// (server/src/modules/appointment/). roomName is a server-generated,
+// unpredictable Jitsi room — treat it as a capability token.
+model Appointment {
+  id        String            @id @default(uuid())
+  studentId String
+  teacherId String
+  roomName  String            @unique
+  status    AppointmentStatus @default(PENDING)
+  startTime DateTime?
+  endTime   DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  student   User       @relation("AppointmentStudent", fields: [studentId], references: [id])
+  teacher   User       @relation("AppointmentTeacher", fields: [teacherId], references: [id])
+  recordings Recording[]
+
+  @@index([studentId, status])
+  @@index([teacherId, status])
+}
+
+enum AppointmentStatus {
+  PENDING
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}

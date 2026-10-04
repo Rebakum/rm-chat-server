@@ -1,0 +1,13 @@
+model Review {
+  id             String   @id @default(uuid())
+  userId         String
+  name           String?
+  email          String   @unique
+  role           String?
+  photoURL       String?
+  presentCountry String?
+  rating         Float
+  description    String
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id])
+}

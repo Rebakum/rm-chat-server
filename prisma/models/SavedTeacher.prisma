@@ -1,0 +1,10 @@
+model SavedTeacher {
+  id        String   @id @default(uuid())
+  student   User     @relation("SavedTeacherStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  teacher   User     @relation("SavedTeacherTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId String
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, teacherId])
+}

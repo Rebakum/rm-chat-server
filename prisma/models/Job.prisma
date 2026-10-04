@@ -1,0 +1,30 @@
+model Job {
+  id               String           @id @default(uuid())
+  jobTitle         String
+  teacherType      String?
+  category         String?
+  jobDescription   String?
+  qualifications   String?
+  minSalary        Float?
+  maxSalary        Float?
+  genderPreference String?
+  hoursPerWeek     String?
+  howManyDays      String?
+  userId           String
+  status           String           @default("Pending")
+  jobStatus        String           @default("Open")
+  createdAt        DateTime         @default(now())
+  poster           User             @relation(fields: [userId], references: [id])
+  applications     JobApplication[]
+}
+
+model JobApplication {
+  id          String   @id @default(uuid())
+  jobId       String
+  teacherId   String
+  teacherName String?
+  message     String?
+  appliedAt   DateTime @default(now())
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicant   User     @relation(fields: [teacherId], references: [id])
+}

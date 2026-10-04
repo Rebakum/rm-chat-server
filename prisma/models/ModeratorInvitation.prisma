@@ -1,0 +1,17 @@
+model ModeratorInvitation {
+  id               String    @id @default(uuid())
+  userId           String
+  invitedByAdminId String
+  status           String    @default("PENDING")
+  tokenHash        String    @unique
+  expiresAt        DateTime
+  acceptedAt       DateTime?
+  rejectedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  invitedUser User @relation("InvitedModerator", fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy   User @relation("AdminInvitations", fields: [invitedByAdminId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}

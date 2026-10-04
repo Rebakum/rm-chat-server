@@ -1,0 +1,33 @@
+model Call {
+  id         String        @id @default(uuid())
+  roomName   String        @unique
+  chatId     String
+  userId     String
+  peerId     String
+  type       CallType
+  lastCallAt DateTime?
+  createdAt  DateTime      @default(now())
+  user       User          @relation("CallUser", fields: [userId], references: [id])
+  peer       User          @relation("CallPeer", fields: [peerId], references: [id])
+  chat       Chat          @relation(fields: [chatId], references: [id])
+  sessions   CallSession[]
+  recordings Recording[]
+}
+
+enum CallType {
+  video
+  audio
+}
+
+model CallSession {
+  id             String    @id @default(uuid())
+  callId         String
+  startedAt      DateTime
+  endedAt        DateTime?
+  duration       Int?
+  // Ids of users who actually joined the call room during this session —
+  // lets the admin tell a real two-party class apart from one side dialing
+  // in alone and getting no answer (see joinRoom in sockets/call.ts).
+  participantIds String[]  @default([])
+  call           Call      @relation(fields: [callId], references: [id], onDelete: Cascade)
+}

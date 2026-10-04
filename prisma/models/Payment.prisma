@@ -1,0 +1,49 @@
+model Payment {
+  id              String   @id @default(uuid())
+  bookingId       String
+  serviceTitle    String?
+  bookingPrice    Float?
+  paymentMethod   String?
+  accountNumber   String?
+  transactionId   String?
+  bankName        String?
+  accountHolder   String?
+  paymentProofUrl String?
+  paymentStatus   String   @default("pending")
+  paymentVerified Boolean  @default(false)
+  merchantTxId    String?
+  epsTxId         String?
+  amountUSD       Float?
+  amountBDT       Float?
+  exchangeRate    Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+}
+
+model EpsTransaction {
+  id                    String   @id @default(uuid())
+  merchantTransactionId String   @unique
+  bookingId             String
+  amountUSD             Float
+  amount                Float
+  exchangeRate          Float?
+  status                String   @default("pending")
+  epsTransactionId      String?
+  rawResponse           Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  booking               Booking  @relation(fields: [bookingId], references: [id])
+}
+
+model Payout {
+  id              String    @id @default(uuid())
+  teacherId       String
+  amountRequested Float
+  amountPaid      Float
+  method          String
+  status          String    @default("pending")
+  date            DateTime  @default(now())
+  paidAt          DateTime?
+  teacher         User      @relation(fields: [teacherId], references: [id])
+}

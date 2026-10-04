@@ -1,0 +1,12 @@
+model Course {
+  id         String   @id @default(uuid())
+  name       String
+  email      String
+  phone      String?
+  gender     String?
+  terms      Boolean  @default(false)
+  courseName String
+  createdAt  DateTime @default(now())
+
+  @@unique([email, courseName])
+}

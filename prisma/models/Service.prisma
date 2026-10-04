@@ -1,0 +1,24 @@
+model Service {
+  id            String       @id @default(uuid())
+  title         String
+  description   String?
+  price         Float
+  deliveryTime  String?
+  engLevel      String?
+  category      String?
+  featuredImage String?
+  status        String       @default("Pending")
+  teacherId     String
+  createdAt     DateTime     @default(now())
+  teacher       User         @relation("TeacherServices", fields: [teacherId], references: [id])
+  faqs          ServiceFaq[]
+  bookings      Booking[]
+}
+
+model ServiceFaq {
+  id        String  @id @default(uuid())
+  serviceId String
+  question  String
+  answer    String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}

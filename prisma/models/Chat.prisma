@@ -1,0 +1,46 @@
+model Chat {
+  id          String    @id @default(uuid())
+  member1Id   String
+  member2Id   String
+  unreadCount Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  member1     User      @relation("ChatMember1", fields: [member1Id], references: [id])
+  member2     User      @relation("ChatMember2", fields: [member2Id], references: [id])
+  messages    Message[]
+  calls       Call[]
+}
+
+model Message {
+  id         String    @id @default(uuid())
+  chatId     String
+  senderId   String
+  receiverId String
+  text       String    @default("")
+  type       String    @default("text")
+  orderId    String?
+  fileUrl    String?
+  fileName   String?
+  replyToId  String?
+  read       Boolean   @default(false)
+  isEdited   Boolean   @default(false)
+  timestamp  DateTime  @default(now())
+  chat       Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender     User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiver   User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  replyTo    Message?  @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies    Message[] @relation("MessageReplies")
+  reactions  MessageReaction[]
+}
+
+model MessageReaction {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}

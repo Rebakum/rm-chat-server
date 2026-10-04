@@ -1,0 +1,34 @@
+model Dawra {
+  id                  String            @id @default(uuid())
+  userId              String            @unique
+  email               String
+  displayName         String?
+  birthCertificateUrl String
+  fatherName          String?
+  fatherPhone         String?
+  currentStudy        String?
+  phone               String?
+  status              String            @default("active")
+  createdAt           DateTime          @default(now())
+  admissionFeeAmount  Float             @default(0)
+  admissionFeePaid    Boolean           @default(true)
+  admissionFeePaidAt  DateTime?
+  admissionFeeMethod  String?
+  admissionFeePhone   String?
+  admissionFeeTxId    String?
+  totalFees           Float             @default(0)
+  user                User              @relation(fields: [userId], references: [id])
+  monthlyFees         DawraMonthlyFee[]
+}
+
+model DawraMonthlyFee {
+  id            String  @id @default(uuid())
+  dawraId       String
+  month         String?
+  amount        Float   @default(0)
+  paid          Boolean @default(false)
+  transactionId String?
+  paymentMethod String?
+  paymentPhone  String?
+  dawra         Dawra   @relation(fields: [dawraId], references: [id], onDelete: Cascade)
+}

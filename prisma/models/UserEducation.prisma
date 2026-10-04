@@ -1,0 +1,10 @@
+model UserEducation {
+  id          String  @id @default(uuid())
+  userId      String
+  degree      String?
+  institution String?
+  year        String?
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

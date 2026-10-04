@@ -1,0 +1,21 @@
+model Recording {
+  id            String   @id @default(uuid())
+  teacherId     String
+  studentId     String
+  bookingId     String?  @unique
+  callId        String?
+  appointmentId String?
+  roomName      String?
+  teacherName   String?
+  studentName   String?
+  videoUrl      String
+  publicId      String?
+  duration      Float?
+  status        String   @default("processed")
+  createdAt     DateTime @default(now())
+  teacher       User     @relation("RecordingTeacher", fields: [teacherId], references: [id])
+  student       User     @relation("RecordingStudent", fields: [studentId], references: [id])
+  booking       Booking? @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  call          Call?    @relation(fields: [callId], references: [id])
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+}

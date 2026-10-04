@@ -1,0 +1,99 @@
+model User {
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  emailVerified      Boolean   @default(false)
+  name               String?
+  image              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  role               String    @default("student")
+  previousRole       String?
+  status             String    @default("accepted")
+  displayName        String?
+  firstname          String?
+  lastname           String?
+  username           String?   @unique
+  photoURL           String?
+  coverImage         String?
+  coverImageOriginal String?
+  coverCrop          Json?
+  bio                String?
+  jobTitle           String?
+  gender             String?
+  birthdate          String?
+  phone              String?
+  whatsapp           String?
+  nid                String?
+  nidOrPassportUrl   String?
+  cvUrl              String?
+  liveCameraPhoto    String?
+  youtubeLink        String?
+  presentAddress     String?
+  presentCountry     String?
+  permanentAddress   String?
+  permanentCountry   String?
+  category           String[]  @default([])
+  teacherType        String?
+  englishLevel       String?
+  minRate            Float?
+  maxRate            Float?
+  availability       String[]  @default([])
+  teacherTier        String?
+  facebook           String?
+  linkedin           String?
+  instagram          String?
+  twitter            String?
+  online             Boolean   @default(false)
+  onlineAt           DateTime?
+  offlineAt          DateTime?
+  lastSeen           DateTime?
+  totalOnlineSeconds Int       @default(0)
+  balance            Float     @default(0)
+  totalEarnings      Float     @default(0)
+  verified           Boolean   @default(false)
+  paymentStatus      String?   @default("current")
+
+  teachingLanguages   UserTeachingLanguage[]
+  skills              UserSkill[]
+  education           UserEducation[]
+  experience          UserExperience[]
+  faqs                UserFaq[]
+  certificates        UserCertificate[]
+  galleryImages       UserGalleryImage[]
+  paymentMethods      UserPaymentMethod[]
+  payoutHistory       PayoutHistory[]
+  servicesAsTeacher   Service[]              @relation("TeacherServices")
+  bookingsAsStudent   Booking[]              @relation("StudentBookings")
+  bookingsAsTeacher   Booking[]              @relation("TeacherBookings")
+  jobsPosted          Job[]
+  jobApplications     JobApplication[]
+  payoutsReceived     Payout[]
+  reviewsWritten      Review[]
+  chats1              Chat[]                 @relation("ChatMember1")
+  chats2              Chat[]                 @relation("ChatMember2")
+  messagesSent        Message[]              @relation("SentMessages")
+  messagesReceived    Message[]              @relation("ReceivedMessages")
+  callsAsUser         Call[]                 @relation("CallUser")
+  callsAsPeer         Call[]                 @relation("CallPeer")
+  appointmentsAsStudent Appointment[]        @relation("AppointmentStudent")
+  appointmentsAsTeacher Appointment[]        @relation("AppointmentTeacher")
+  enrollments         Enrollment[]
+  dawra               Dawra?
+  recordingsAsTeacher Recording[]            @relation("RecordingTeacher")
+  recordingsAsStudent Recording[]            @relation("RecordingStudent")
+  freeClassBookings   FreeClassBooking[]
+  sessions            Session[]
+  accounts            Account[]
+
+  moderatorInvitations ModeratorInvitation[] @relation("InvitedModerator")
+  adminSentInvitations ModeratorInvitation[] @relation("AdminInvitations")
+  moderatorPermissions ModeratorPermission[]
+  auditActions         ModeratorAuditLog[]   @relation("AuditActor")
+  auditTargets         ModeratorAuditLog[]   @relation("AuditTarget")
+  notifications        Notification[]
+  teacherApplications  TeacherApplication[]
+  savedTeachersAsStudent SavedTeacher[] @relation("SavedTeacherStudent")
+  savedTeachersAsTeacher SavedTeacher[] @relation("SavedTeacherTeacher")
+
+  @@index([role, status])
+}

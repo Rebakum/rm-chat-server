@@ -1,0 +1,9 @@
+model UserFaq {
+  id       String @id @default(uuid())
+  userId   String
+  question String
+  answer   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

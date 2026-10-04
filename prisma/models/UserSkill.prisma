@@ -1,0 +1,9 @@
+model UserSkill {
+  id     String @id @default(uuid())
+  userId String
+  skill  String
+  level  String @default("")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

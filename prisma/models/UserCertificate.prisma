@@ -1,0 +1,8 @@
+model UserCertificate {
+  id     String @id @default(uuid())
+  userId String
+  url    String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

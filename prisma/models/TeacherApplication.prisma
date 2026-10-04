@@ -1,0 +1,24 @@
+model TeacherApplication {
+  id          String   @id @default(uuid())
+  userId      String
+  status      String   @default("pending")
+  category    String[]  @default([])
+  teacherType String?
+  gender      String
+  phone       String
+  nid         String
+  bio         String
+  englishLevel String?
+  minRate     Float?
+  maxRate     Float?
+  availability String[] @default([])
+  reviewedAt  DateTime?
+  reviewedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([userId, status])
+}

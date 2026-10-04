@@ -1,0 +1,32 @@
+model Booking {
+  id                   String    @id @default(uuid())
+  bookingType          String
+  serviceId            String?
+  customOrderId        String?
+  userId               String
+  teacherId            String
+  status               String    @default("pending")
+  paymentStatus        String    @default("unpaid")
+  adminHoldAmount      Float     @default(0)
+  bookingPrice         Float     @default(0)
+  teacherPaid          Boolean   @default(false)
+  studentConfirmed     Boolean   @default(false)
+  teacherConfirmed     Boolean   @default(false)
+  completedByAdmin     Boolean   @default(false)
+  completedAt          DateTime?
+  createdAt            DateTime  @default(now())
+  studentReviewRating  Float?
+  studentReviewComment String?
+  studentReviewDate    DateTime?
+  teacherReviewRating  Float?
+  teacherReviewComment String?
+  teacherReviewDate    DateTime?
+
+  student         User             @relation("StudentBookings", fields: [userId], references: [id])
+  teacher         User             @relation("TeacherBookings", fields: [teacherId], references: [id])
+  service         Service?         @relation(fields: [serviceId], references: [id])
+  customOrder     CustomOrder?     @relation(fields: [customOrderId], references: [id])
+  payments        Payment[]
+  recording       Recording?
+  epsTransactions EpsTransaction[]
+}

@@ -1,0 +1,11 @@
+model UserExperience {
+  id          String  @id @default(uuid())
+  userId      String
+  title       String?
+  company     String?
+  duration    String?
+  description String?
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

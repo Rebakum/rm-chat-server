@@ -1,0 +1,14 @@
+model CustomOrder {
+  id         String    @id @default(uuid())
+  subject    String
+  totalHours Float
+  hourlyRate Float
+  totalPrice Float
+  startDate  DateTime?
+  endDate    DateTime?
+  teacherId  String
+  userId     String
+  status     String    @default("Pending")
+  createdAt  DateTime  @default(now())
+  bookings   Booking[]
+}

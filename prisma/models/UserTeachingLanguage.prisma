@@ -1,0 +1,8 @@
+model UserTeachingLanguage {
+  id     String @id @default(uuid())
+  userId String
+  lang   String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

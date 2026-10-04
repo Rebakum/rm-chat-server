@@ -1,0 +1,11 @@
+model UserPaymentMethod {
+  id            String  @id @default(uuid())
+  userId        String
+  type          String
+  accountNumber String?
+  bankName      String?
+  branchName    String?
+  accountHolder String?
+  routingNumber String?
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
