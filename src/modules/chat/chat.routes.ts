@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as ctrl from "./chat.controller";
-import { requireAuth, requireAdmin } from "../../middlewares/auth";
+import { requireAuth, requireAdmin, requireRole } from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import { createChatSchema } from "./chat.validation";
 
@@ -17,9 +17,17 @@ router.post(
 // handlers so they never get swallowed by a param match.
 router.get("/chats/directory", requireAuth, ctrl.getDirectory);
 router.post("/chats/direct/:userId", requireAuth, ctrl.openDirect);
-router.get("/chats/monitor/rooms", requireAdmin, ctrl.getMonitorRooms);
+router.get(
+  "/chats/monitor/rooms",
+  requireRole("admin", "moderator"),
+  ctrl.getMonitorRooms
+);
 router.delete("/chats/messages/:messageId", requireAdmin, ctrl.deleteMessageAdmin);
-router.get("/chats/messages/:messageId/edit-history", requireAdmin, ctrl.getMessageEditHistory);
+router.get(
+  "/chats/messages/:messageId/edit-history",
+  requireRole("admin", "moderator"),
+  ctrl.getMessageEditHistory
+);
 
 router.get("/chats/:chatId/messages", requireAuth, ctrl.getChatMessages);
 router.get(

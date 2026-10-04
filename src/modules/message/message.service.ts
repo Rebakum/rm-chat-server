@@ -156,19 +156,26 @@ const updateText = async (
       throw ApiError.badRequest("Only text messages can be edited");
     }
 
-    if (message.text !== data.text) {
-      await tx.messageEditHistory.create({
-        data: {
-          messageId,
-          previousText: message.text,
-          editedById: senderId,
-        },
-      });
+    const updatedText = data.text.trim();
+    if (!updatedText) throw ApiError.badRequest("Message text cannot be empty");
+    if (updatedText.length > 10000) {
+      throw ApiError.badRequest("Message text cannot exceed 10000 characters");
     }
+    if (message.text === updatedText) {
+      throw ApiError.badRequest("Message text has not changed");
+    }
+
+    await tx.messageEditHistory.create({
+      data: {
+        messageId,
+        previousText: message.text,
+        editedById: senderId,
+      },
+    });
 
     return tx.message.update({
       where: { id: messageId },
-      data: { text: data.text, isEdited: true },
+      data: { text: updatedText, isEdited: true },
       include: {
         sender: { select: { id: true, name: true, displayName: true, photoURL: true, image: true, role: true } },
         replyTo: true,
